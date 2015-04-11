@@ -14,29 +14,26 @@ public class Movement : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
         InputDevice inputDevice = InputManager.ActiveDevice;
-        //If the J button is hit, move left
-        if (Input.GetKey("j") || inputDevice.DPadLeft.IsPressed)
-        {
-            this.gameObject.transform.Translate(moveSpeed * Vector3.left * Time.deltaTime);
-        }
 
-            //If the L button is hit, move right
-        if (Input.GetKey("l") || inputDevice.DPadRight.IsPressed)
-            {
-                this.gameObject.transform.Translate(moveSpeed * Vector3.right * Time.deltaTime);
-            }
+		Vector2 stickInput = new Vector2(inputDevice.RightStickX, inputDevice.RightStickY);
+		//Deadzone calc
+		float deadzone = 0.20f;
+		if (stickInput.magnitude < deadzone) {
+			stickInput = Vector2.zero;
+		} else {
+			stickInput = stickInput.normalized * ((stickInput.magnitude - deadzone) / (1 - deadzone));
+		}
+		//stickInput is now adjusted with a deadzone
 
-            //If the I button is hit, move up
-        if (Input.GetKey("i") || inputDevice.DPadUp.IsPressed)
-            {
-                this.gameObject.transform.Translate(moveSpeed * Vector3.up * Time.deltaTime);
-            }
-
-            //If the K button is hit, move down
-        if (Input.GetKey("k") || inputDevice.DPadDown.IsPressed)
-            {
-                this.gameObject.transform.Translate(moveSpeed * Vector3.down * Time.deltaTime);
-            }
+		float magnitude = stickInput.magnitude; //save the magnitude
+		float angle = Mathf.Atan2 (stickInput.y, stickInput.x) * Mathf.Rad2Deg; //And save the direction
+		Vector2 movement = new Vector2 (magnitude * Mathf.Cos (angle), magnitude * Mathf.Sin (angle)); //Convert polar to cartesian coordinates
+		this.rigidbody2D.velocity = movement * moveSpeed; //Set the velocity to the new direction times the desired movement speed
+		
+//		//Alternatively apply force instead of setting the velocity  if the player should have inertia
+//		if (this.rigidbody2D.velocity.magnitude < moveSpeed) {
+//				this.rigidbody2D.AddForce (movement);
+//		}
         
 	}
 }
